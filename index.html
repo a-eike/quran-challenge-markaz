@@ -27,9 +27,9 @@
 * { box-sizing: border-box; }
 body { margin: 0; color: var(--ink); background: var(--canvas); font: 16px/1.5 var(--sans); }
 a { color: inherit; text-decoration: none; }
-button { font: inherit; }
+button, input, select { font: inherit; }
 button { cursor: pointer; }
-button:focus-visible, a:focus-visible { outline: 3px solid #719554; outline-offset: 3px; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #719554; outline-offset: 3px; }
 h1, h2, p, dl, dd { margin: 0; }
 h1, h2 { font-family: var(--serif); font-weight: 500; line-height: 1.06; overflow-wrap: anywhere; }
 h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); letter-spacing: -.035em; }
@@ -279,6 +279,28 @@ progress::-moz-progress-bar { border-radius: 100px; background: var(--primary); 
 .history-date { display: block; margin-top: 5px; color: var(--muted); font-size: .73rem; }
 :root[lang="ar"] .history-date { white-space: nowrap; }
 .history-future { color: var(--muted); }
+.form-stack { display: grid; gap: 11px; margin-top: 16px; }
+.form-stack label { color: var(--ink); font-size: .87rem; font-weight: 680; min-width: 0; }
+.form-stack label input, .form-stack label select { display: block; margin-top: 4px; }
+.form-stack input, .form-stack select {
+    min-width: 0;
+    width: 100%;
+    min-height: 42px;
+    background: #f9faf5;
+    border: 1px solid #cdd9cc;
+    border-radius: 9px;
+    padding: 7px 11px;
+    color: var(--ink);
+    font-size: 1rem;
+    font-weight: 530;
+}
+.stepper { display: grid; grid-template-columns: 45px 1fr 45px; gap: 8px; margin-top: -5px; }
+.stepper button { border: 1px solid #cdd9cc; border-radius: 9px; background: #eef3e9; color: var(--ink); font-size: 1.2rem; }
+.stepper button:hover:enabled { background: var(--mint); }
+.stepper button:disabled { cursor: default; opacity: .55; }
+.stepper input { text-align: center; appearance: textfield; }
+.stepper input::-webkit-inner-spin-button, .stepper input::-webkit-outer-spin-button { appearance: none; }
+.block-preview { margin-top: -7px; color: var(--muted); font-size: .8rem; }
 .button {
     display: inline-flex;
     align-items: center;
@@ -377,6 +399,7 @@ progress::-moz-progress-bar { border-radius: 100px; background: var(--primary); 
     .topbar-inner { gap: 15px; }
     .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
     .side-stack { display: contents; }
+    .log-panel { grid-row: 1; }
 }
 
 @media (max-width: 550px) {
@@ -445,7 +468,8 @@ progress::-moz-progress-bar { border-radius: 100px; background: var(--primary); 
             </div>
         </header>
         <main class="shell">
-            <p class="notice" data-ar="عرض تجريبي ببيانات افتراضية">Testansicht mit Beispieldaten</p>
+            <p class="notice" data-ar="عرض تجريبي ببيانات افتراضية. تُحفظ الإدخالات الجديدة في هذا المتصفّح.">Testansicht mit Beispieldaten. Neue Einträge werden in diesem Browser gespeichert.</p>
+            <p class="notice error" id="storage-warning" data-ar="تعذّرت قراءة الإدخالات المحفوظة في هذا المتصفّح." role="alert" hidden>Die gespeicherten Einträge konnten nicht aus diesem Browser geladen werden.</p>
             <p class="notice" id="notice" role="status" hidden></p>
 
             <div id="dashboard">
@@ -515,6 +539,21 @@ progress::-moz-progress-bar { border-radius: 100px; background: var(--primary); 
                     </section>
 
                     <div class="side-stack" id="dashboard-sidebar">
+                        <section class="panel log-panel" aria-labelledby="log-title">
+                            <h2 id="log-title" data-ar="تسجيل الأسطر">Zeilen eintragen</h2>
+                            <form class="form-stack" id="entry-form">
+                                <label><span data-ar="المشارك">Teilnehmer</span> <select id="entry-member" required></select></label>
+                                <label for="blocks" data-ar="عدد مجموعات الخمسة أسطر">Anzahl der 5er-Blöcke</label>
+                                <div class="stepper">
+                                    <button type="button" data-step="-1" aria-label="Einen Block abziehen" data-ar-label="إنقاص مجموعة واحدة">−</button>
+                                    <input id="blocks" type="number" inputmode="numeric" required min="1" max="10000" step="1" value="1" aria-describedby="block-preview">
+                                    <button type="button" data-step="1" aria-label="Einen Block hinzufügen" data-ar-label="إضافة مجموعة واحدة">+</button>
+                                </div>
+                                <output class="block-preview" id="block-preview" for="blocks">= 5 Zeilen</output>
+                                <label><span data-ar="تاريخ الحفظ">Lerndatum</span> <input id="entry-date" type="date" required></label>
+                                <button class="button" type="submit" data-ar="حفظ التسجيل">Eintrag speichern</button>
+                            </form>
+                        </section>
                         <section class="panel activity-panel" aria-labelledby="activity-title">
                             <h2 id="activity-title" data-ar="آخر تسجيلات الحفظ">Letzte Einträge</h2>
                             <p class="muted" id="activity-empty" data-ar="تظهر هنا أسماء المشاركين وعدد الأسطر التي حفظوها وتواريخ الحفظ.">Hier erscheint, wer wann wie viele Zeilen gelernt hat.</p>
@@ -540,6 +579,9 @@ progress::-moz-progress-bar { border-radius: 100px; background: var(--primary); 
 'use strict';
 
 const LANGUAGE_KEY = 'hifz-pages-preview-language-v1';
+const STORAGE_PREFIX = 'hifz-pages-local-v1:' + new URL('.', window.location.href).pathname + ':';
+const ENTRY_KEY_PREFIX = STORAGE_PREFIX + 'entry:';
+const DEMO_DATE_KEY = STORAGE_PREFIX + 'demo-date';
 const DEFAULT_TITLE = 'Quran auswendig lernen';
 const DEFAULT_TITLE_ARABIC = 'حفظ القرآن الكريم';
 const LINES_PER_BLOCK = 5;
@@ -622,6 +664,7 @@ function changeLanguage(nextLanguage) {
     if (nextLanguage === language) return;
     language = nextLanguage;
     applyLanguage();
+    showBlocks();
     showNotice();
     render();
 }
@@ -641,8 +684,26 @@ function formatDateRange(from, to) {
     return localized(start + ' – ' + end, 'من ' + start + ' إلى ' + end);
 }
 
+function validDate(key) {
+    return typeof key === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(key)
+        && key >= '1900-01-01' && key <= '9994-12-31'
+        && dateKey(new Date(key + 'T12:00:00')) === key;
+}
+
+function demoDate() {
+    const today = new Date();
+    try {
+        const stored = localStorage.getItem(DEMO_DATE_KEY);
+        if (validDate(stored)) return new Date(stored + 'T12:00:00');
+        localStorage.setItem(DEMO_DATE_KEY, dateKey(today));
+    } catch {
+        // The example data is still available when browser storage is disabled.
+    }
+    return today;
+}
+
 function createDemoChallenge() {
-    const now = new Date();
+    const now = demoDate();
     const sampleDate = (offset) => {
         const date = new Date(now);
         date.setDate(date.getDate() + offset);
@@ -661,6 +722,7 @@ function createDemoChallenge() {
 }
 
 const state = createDemoChallenge();
+const demoEntries = state.entries;
 let period = 'total';
 let selectedView = 'ranking';
 let showAllEntries = false;
@@ -692,6 +754,41 @@ function showNotice() {
 function notice(german = '', arabic, error = false) {
     currentNotice = { german, arabic, error };
     showNotice();
+}
+
+function validBlockCount(blocks) {
+    return Number.isInteger(blocks) && blocks >= 1 && blocks <= 10000;
+}
+
+function validEntry(entry) {
+    return entry && validDate(entry.date) && validBlockCount(entry.blocks)
+        && state.members.some((member) => member.id === entry.memberId);
+}
+
+function readEntries() {
+    const warning = $('storage-warning');
+    try {
+        const saved = [];
+        for (let index = 0; index < localStorage.length; index += 1) {
+            const key = localStorage.key(index);
+            if (!key?.startsWith(ENTRY_KEY_PREFIX)) continue;
+            const raw = localStorage.getItem(key);
+            let entry;
+            try {
+                entry = JSON.parse(raw);
+            } catch {
+                continue;
+            }
+            if (validEntry(entry)) saved.push({ key, entry });
+        }
+        saved.sort((a, b) => a.key.localeCompare(b.key));
+        state.entries = demoEntries.concat(saved.map(({ entry }) => entry));
+        warning.hidden = true;
+        return true;
+    } catch {
+        warning.hidden = false;
+        return false;
+    }
 }
 
 function progressBar(value, label, arabicLabel) {
@@ -1093,6 +1190,56 @@ function navigate() {
     window.scrollTo(0, 0);
 }
 
+const blockInput = $('blocks');
+const entryDate = $('entry-date');
+const entryMember = $('entry-member');
+const stepButtons = document.querySelectorAll('[data-step]');
+
+function showBlocks() {
+    const blocks = blockInput.valueAsNumber;
+    const lines = blocks * LINES_PER_BLOCK;
+    const preview = validBlockCount(blocks)
+        ? ['= ' + formatter.format(lines) + ' Zeilen', 'عدد الأسطر: ' + arabicNumber.format(lines)]
+        : ['Gib eine ganze Anzahl zwischen 1 und 10.000 ein.', 'أدخل عددًا صحيحًا بين ١ و١٠٬٠٠٠.'];
+    setText($('block-preview'), ...preview);
+    for (const button of stepButtons) {
+        button.disabled = Number(button.dataset.step) < 0 ? blocks <= 1 : blocks >= 10000;
+    }
+}
+
+for (const button of stepButtons) {
+    button.addEventListener('click', () => {
+        const start = Number.isFinite(blockInput.valueAsNumber) ? Math.trunc(blockInput.valueAsNumber) : 0;
+        blockInput.value = Math.min(10000, Math.max(1, start + Number(button.dataset.step)));
+        showBlocks();
+    });
+}
+blockInput.addEventListener('input', showBlocks);
+
+$('entry-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const entry = { memberId: entryMember.value, blocks: blockInput.valueAsNumber, date: entryDate.value };
+    if (!validEntry(entry) || entry.date > dateKey(new Date())) {
+        notice('Wähle einen Teilnehmer, eine ganze Blockzahl und ein Lerndatum bis einschließlich heute.',
+            'اختر مشاركًا وأدخل عددًا صحيحًا من المجموعات وتاريخ حفظ لا يتجاوز اليوم.', true);
+        return;
+    }
+
+    try {
+        const id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (byte) => byte.toString(16).padStart(2, '0')).join('');
+        localStorage.setItem(ENTRY_KEY_PREFIX + Date.now() + '-' + id, JSON.stringify(entry));
+    } catch {
+        notice('Der Eintrag konnte in diesem Browser nicht gespeichert werden.', 'تعذّر حفظ الإدخال في هذا المتصفّح.', true);
+        return;
+    }
+
+    if (!readEntries()) state.entries = [...state.entries, entry];
+    blockInput.value = '1';
+    showBlocks();
+    notice();
+    render();
+});
+
 $('show-activity').addEventListener('click', () => {
     showAllEntries = !showAllEntries;
     renderDashboard(overview());
@@ -1142,8 +1289,18 @@ window.addEventListener('resize', drawTvPage);
 window.addEventListener('hashchange', navigate);
 window.addEventListener('storage', (event) => {
     if (event.key === LANGUAGE_KEY || event.key === null) changeLanguage(readLanguage());
+    if (event.key === null || event.key.startsWith(ENTRY_KEY_PREFIX)) {
+        readEntries();
+        render();
+    }
 });
 window.setInterval(() => {
+    const today = dateKey(new Date());
+    if (today !== entryDate.max) {
+        if (entryDate.value === entryDate.max) entryDate.value = today;
+        entryDate.max = today;
+        render();
+    }
     if (currentPage === 'tv' && selectedView === 'ranking' && tvPageCount > 1) {
         tvPage = (tvPage + 1) % tvPageCount;
         drawTvPage();
@@ -1151,6 +1308,15 @@ window.setInterval(() => {
 }, 12000);
 
 applyLanguage();
+entryMember.append(...state.members.map((member) => {
+    const option = node('option', '', member.name);
+    option.value = member.id;
+    return option;
+}));
+entryDate.value = dateKey(new Date());
+entryDate.max = entryDate.value;
+showBlocks();
+readEntries();
 navigate();
 </script>
 </body>
