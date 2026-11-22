@@ -1,0 +1,1157 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4f5ee">
+    <title>Hifz Challenge</title>
+    <style>
+:root {
+    color-scheme: light;
+    --canvas: #f4f5ee;
+    --paper: #fffef9;
+    --ink: #18362e;
+    --muted: #4d655b;
+    --border: #dbe3d7;
+    --primary: #216047;
+    --dark: #12382c;
+    --mint: #dcebd7;
+    --gold: #d6e9a9;
+    --radius: 19px;
+    --serif: Georgia, 'Times New Roman', serif;
+    --sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --arabic: Tahoma, 'Segoe UI', Arial, sans-serif;
+}
+
+:root[lang="ar"] { --sans: var(--arabic); --serif: var(--arabic); }
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--ink); background: var(--canvas); font: 16px/1.5 var(--sans); }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible { outline: 3px solid #719554; outline-offset: 3px; }
+h1, h2, p, dl, dd { margin: 0; }
+h1, h2 { font-family: var(--serif); font-weight: 500; line-height: 1.06; overflow-wrap: anywhere; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); letter-spacing: -.035em; }
+h2 { font-size: 1.75rem; letter-spacing: -.027em; }
+:root[lang="ar"] :is(h1, h2, .brand, .eyebrow, .stat-value, .stat-value span) { letter-spacing: normal; }
+code { font-size: .96em; overflow-wrap: anywhere; }
+.muted { color: var(--muted); }
+.compact { font-size: .9rem; }
+.eyebrow { font-size: .71rem; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+.topbar { background: var(--paper); border-bottom: 1px solid var(--border); }
+.topbar-inner {
+    width: min(1260px, 100% - 64px);
+    min-height: 69px;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+.brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 760; letter-spacing: -.037em; white-space: nowrap; }
+.brand-mark { display: inline-block; position: relative; width: 34px; height: 34px; border-radius: 11px; background: var(--dark); color: var(--gold); flex: none; }
+.brand-mark::before, .brand-mark::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    width: 8px;
+    height: 12px;
+    border-block: 1.5px solid currentColor;
+}
+.brand-mark::before { left: 8px; border-left: 1.5px solid currentColor; border-radius: 2px 3px 0 2px; transform: skewY(12deg); }
+.brand-mark::after { right: 8px; border-right: 1.5px solid currentColor; border-radius: 3px 2px 2px 0; transform: skewY(-12deg); }
+.navigation { display: flex; gap: 8px; align-items: center; margin-inline-start: auto; color: var(--muted); font-size: .875rem; font-weight: 670; }
+.navigation a { padding: 8px 11px; border-radius: 8px; white-space: nowrap; }
+.navigation a[aria-current], .navigation a:hover { color: var(--ink); background: var(--canvas); }
+.navigation .nav-screen { border: 1px solid var(--border); }
+.language-switch { flex: none; min-width: 68px; }
+.language-switch [lang="ar"] { font-family: var(--arabic); }
+.shell { width: min(1260px, 100% - 64px); margin: 28px auto 56px; }
+.hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 224px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+    padding: clamp(26px, 4.4vw, 55px);
+    border-radius: 24px;
+    background: radial-gradient(ellipse at 98% 45%, #315744 0%, transparent 54%), #12382c;
+    color: #fffdf2;
+}
+.hero::before, .hero::after {
+    position: absolute;
+    z-index: -1;
+    content: '';
+    pointer-events: none;
+}
+.hero::before {
+    inset: 0 0 0 49%;
+    opacity: .25;
+    background-image:
+        repeating-linear-gradient(45deg, transparent 0 31px, #d3e6aa62 32px, transparent 33px 56px),
+        repeating-linear-gradient(-45deg, transparent 0 31px, #d3e6aa62 32px, transparent 33px 56px);
+    mask-image: linear-gradient(90deg, transparent 0%, black 100%);
+}
+.hero::after {
+    width: 283px;
+    height: 283px;
+    bottom: -136px;
+    right: -3px;
+    transform: rotate(45deg);
+    border: 1px solid #d3e6aa46;
+    box-shadow: 0 0 0 19px #d3e6aa14, 0 0 0 38px #d3e6aa0e, 0 0 0 57px #d3e6aa0a;
+    border-radius: 40px;
+}
+.hero .eyebrow { color: var(--gold); display: flex; align-items: center; gap: 9px; margin-bottom: 11px; }
+.hero h1 { font-size: clamp(2.45rem, 5.1vw, 4.6rem); line-height: 1; }
+.hero-main > p:last-child { margin-top: 12px; color: #d9e7da; }
+.hero-target {
+    display: grid;
+    flex: none;
+    gap: 3px;
+    padding-block-end: 1px;
+    padding-inline-start: 21px;
+    border-inline-start: 1px solid #a7c4a5;
+    color: #e0eadb;
+    font-size: .81rem;
+    font-variant-numeric: tabular-nums;
+}
+.hero-target strong { color: #fffdf2; font-family: var(--serif); font-size: 2.5rem; font-weight: 500; line-height: 1.14; }
+.hero-target small { font: 600 .81rem var(--sans); }
+.panel {
+    min-width: 0;
+    padding: 23px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--paper);
+    box-shadow: 0 2px 4px #243f2907;
+}
+.panel h2 + p { margin-top: 8px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 17px 0; }
+.stat { display: flex; flex-direction: column; justify-content: center; min-height: 124px; padding: 18px 22px; }
+.stat.personal { background: #e4eedc; border-color: #d4e2cb; }
+.stat-label { font-size: .84rem; color: #38554a; font-weight: 720; }
+.stat-value { font-size: clamp(1.68rem, 3.4vw, 2.57rem); font-weight: 640; line-height: 1.16; letter-spacing: -.07em; font-variant-numeric: tabular-nums; margin: 4px 0 4px; }
+.stat-value span { font-size: .47em; color: var(--muted); letter-spacing: -.025em; white-space: nowrap; }
+.stat-detail { font-size: .8rem; color: var(--muted); }
+.stat progress { margin: 2px 0 6px; }
+progress {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: 6px;
+    border: 0;
+    border-radius: 100px;
+    overflow: hidden;
+    appearance: none;
+    accent-color: var(--primary);
+    background: #e0e7dc;
+    color: var(--primary);
+}
+.personal progress { background: #cedbc9; }
+progress::-webkit-progress-bar { background: transparent; }
+progress::-webkit-progress-value { border-radius: 100px; background: currentColor; }
+progress::-moz-progress-bar { border-radius: 100px; background: var(--primary); }
+.dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.85fr) minmax(290px, 1fr); gap: 17px; align-items: start; }
+.side-stack { display: grid; gap: 17px; min-width: 0; }
+.section-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 19px; }
+.section-head h2 + p { margin-top: 5px; }
+.segmented { display: inline-flex; gap: 2px; padding: 3px; border-radius: 9px; background: #eff2eb; }
+.segmented button { border: 0; background: transparent; color: var(--muted); padding: 5px 9px; border-radius: 7px; font-size: .79rem; font-weight: 690; }
+.segmented button[aria-pressed="true"] { background: var(--paper); box-shadow: 0 1px 3px #23372920; color: var(--ink); }
+.progress-head { flex-wrap: wrap; gap: 8px 12px; margin-bottom: 11px; }
+.view-switch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    margin-bottom: 18px;
+    border-radius: 12px;
+    background: #eff2eb;
+}
+.view-switch button {
+    flex: 1 1 auto;
+    min-height: 36px;
+    padding: 5px 9px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: .82rem;
+    font-weight: 690;
+    white-space: nowrap;
+}
+.view-switch button:hover { background: #e2eae0; color: var(--ink); }
+.view-switch button[aria-pressed="true"] { background: var(--primary); color: #fff; }
+.rank-list, .activity-list, .member-list { list-style: none; padding: 0; margin: 0; }
+.rank-row {
+    display: grid;
+    grid-template-columns: 43px minmax(0, 1.05fr) minmax(65px, 1fr) minmax(54px, .4fr) minmax(54px, .4fr);
+    align-items: center;
+    gap: 10px;
+    padding: 12px 11px;
+    border-bottom: 1px solid #e9ede5;
+}
+.ranking-head { color: var(--muted); font-size: .74rem; font-weight: 690; padding-block: 4px 9px; }
+.rank-row > :nth-last-child(-n + 2) { text-align: end; }
+.rank-number { color: var(--muted); font-variant-numeric: tabular-nums; }
+.rank-list .rank-row:last-child { border-bottom-color: transparent; }
+.rank-name { font-size: .91rem; font-weight: 660; overflow-wrap: anywhere; }
+.rank-lines, .rank-blocks { font-size: 1rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.rank-progress { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: .73rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.view-note { color: var(--muted); font-size: .85rem; }
+.podium, .goal-list, .history-list { list-style: none; padding: 0; margin: 0; }
+.podium {
+    display: grid;
+    align-items: end;
+    gap: 5px;
+    padding-top: 8px;
+}
+.podium-top {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    border-bottom: 2px solid #dbe4d5;
+}
+.podium-all { grid-template-columns: repeat(auto-fit, minmax(min(100%, 104px), 1fr)); row-gap: 15px; }
+.podium-place { min-width: 0; text-align: center; overflow-wrap: anywhere; }
+.podium-top .podium-place { grid-row: 1; }
+.podium-top .podium-place[data-rank="1"] { grid-column: 2; }
+.podium-top .podium-place[data-rank="2"] { grid-column: 1; }
+.podium-top .podium-place[data-rank="3"] { grid-column: 3; }
+.podium-all .podium-place { --step-height: max(51px, calc(75px - 3px * var(--place-number))); }
+.podium-place[data-rank="1"] { --step-height: 105px; --step-paper: #ecdfa3; --step-ink: #503e20; }
+.podium-place[data-rank="2"] { --step-height: 86px; --step-paper: #dce9e3; --step-ink: #2b5045; }
+.podium-place[data-rank="3"] { --step-height: 67px; --step-paper: #eee3d5; --step-ink: #5f4435; }
+.podium-names { display: grid; gap: 3px; margin: 0 2px 8px; font-size: .87rem; font-weight: 690; }
+.podium-all .podium-place:only-child .podium-names { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px 16px; }
+.podium-names > * { min-width: 0; }
+.podium-step {
+    display: grid;
+    place-content: center;
+    gap: 2px;
+    min-height: calc(var(--step-height, 54px) * var(--step-scale, 1));
+    padding: 6px 3px;
+    border-radius: 11px 11px 0 0;
+    background: var(--step-paper, #eaf0e5);
+    color: var(--step-ink, #344e42);
+}
+.podium-all .podium-step { border-bottom: 2px solid #d4dfd0; }
+.podium-number { font: 1.95rem/1 var(--serif); }
+.podium-lines { font-size: .76rem; font-weight: 680; line-height: 1.25; font-variant-numeric: tabular-nums; }
+.goal-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 205px), 1fr)); gap: 9px; }
+.goal-card {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid #dce5d7;
+    border-radius: 12px;
+    background: #f5f7ef;
+    overflow-wrap: anywhere;
+}
+.goal-name { font-size: .92rem; }
+.goal-lines, .goal-status { color: var(--muted); font-size: .8rem; font-variant-numeric: tabular-nums; }
+.goal-lines { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 7px; }
+.goal-percent { color: var(--ink); font-weight: 690; }
+.goal-status.complete { color: var(--primary); font-weight: 730; }
+.history-list {
+    --bar-height: 100px;
+    --plot-height: calc(var(--bar-height) + 43px);
+    display: grid;
+    grid-template-columns: repeat(var(--history-columns), minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 8px;
+    background: repeating-linear-gradient(to top, #e5ebe2 0 1px, transparent 1px 35px) left top / 100% var(--plot-height) no-repeat;
+}
+.history-point { min-width: 0; text-align: center; overflow-wrap: anywhere; }
+.history-column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    height: var(--plot-height);
+}
+.history-value { margin-bottom: 3px; font-size: .75rem; font-weight: 680; font-variant-numeric: tabular-nums; }
+.history-bar { flex: none; width: min(70%, 46px); height: calc(var(--share) * var(--bar-height)); border-radius: 5px 5px 0 0; background: #367a58; }
+.history-date { display: block; margin-top: 5px; color: var(--muted); font-size: .73rem; }
+:root[lang="ar"] .history-date { white-space: nowrap; }
+.history-future { color: var(--muted); }
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 8px 13px;
+    border: 1px solid var(--primary);
+    border-radius: 9px;
+    background: var(--primary);
+    color: #ffffff;
+    font-weight: 690;
+    font-size: .872rem;
+    text-align: center;
+}
+.button:hover { background: #194d39; }
+.button.outline { color: var(--ink); background: var(--paper); border-color: #cdd9cc; }
+.button.outline:hover { background: #edf2e9; }
+.button.small { min-height: 34px; padding: 4px 9px; font-size: .79rem; }
+.text-button { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; padding: 7px 0; border: 0; background: transparent; }
+.activity-list, .member-list { margin-top: 12px; }
+.activity-list li, .member-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #e9ede5; overflow-wrap: anywhere; }
+.activity-list li:last-child, .member-list li:last-child { border-bottom: 0; padding-bottom: 0; }
+.activity-list strong, .member-list li { font-size: .88rem; }
+.activity-list time { display: block; color: var(--muted); font-size: .78rem; }
+.page-heading { margin: 0 0 18px; }
+.page-heading p { margin-top: 6px; }
+.notice {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 15px;
+    padding: 11px 15px;
+    margin: 0 0 14px;
+    border: 1px solid #ccd9c1;
+    background: #e7f0df;
+    border-radius: 10px;
+    font-size: .89rem;
+}
+.notice.error { background: #fff1e8; border-color: #edd1be; color: #722f24; }
+
+.screen-controls { display: flex; flex-wrap: wrap; gap: 7px; margin-inline-start: auto; }
+.screen-controls .button { font-size: clamp(.78rem, 1.12vw, 1.1rem); white-space: nowrap; }
+#workspace:fullscreen { background: var(--canvas); overflow-y: auto; }
+#workspace::backdrop { background: var(--canvas); }
+.screen-body .topbar-inner, .screen-body .shell { width: min(1720px, 100% - clamp(26px, 6vw, 112px)); }
+.screen-body .topbar-inner { min-height: clamp(50px, 6.8vh, 78px); gap: 6px 12px; }
+.screen-body .shell { margin-block: clamp(10px, 1.8vh, 24px); }
+.screen-body .hero { display: none; }
+.screen-body .stats { gap: clamp(8px, 1.25vw, 18px); margin-block: clamp(9px, 1.5vh, 18px); }
+.screen-body .stat { min-height: 0; padding: clamp(9px, 1.45vh, 20px) clamp(10px, 1.6vw, 26px); }
+.screen-body .stat-label { font-size: clamp(.78rem, 1.1vw, 1.12rem); }
+.screen-body .stat-value { font-size: clamp(1.38rem, min(3.4vw, 4.1vh), 3.45rem); }
+.screen-body .stat-detail { font-size: clamp(.71rem, .97vw, 1rem); }
+.screen-body .dashboard-grid { display: block; }
+.screen-body .ranking { padding: clamp(12px, min(2.2vw, 2.4vh), 29px); }
+.screen-body .progress-head h2 { font-size: clamp(1.42rem, min(3.1vw, 3.7vh), 2.8rem); }
+.screen-body .view-switch { margin-bottom: clamp(8px, 1.4vh, 18px); }
+.screen-body .view-switch button, .screen-body .segmented button { font-size: clamp(.8rem, 1.22vw, 1.28rem); }
+.screen-body .view-switch button { min-height: clamp(37px, 4.6vh, 59px); }
+.screen-body .view-note { font-size: clamp(.85rem, 1.3vw, 1.3rem); }
+.screen-body .rank-list { display: grid; gap: clamp(4px, .65vh, 9px); }
+.screen-body .rank-row {
+    grid-template-columns: minmax(43px, .32fr) minmax(0, 1.7fr) minmax(77px, 1.3fr) minmax(64px, .48fr) minmax(64px, .48fr);
+    min-height: clamp(39px, 5.7vh, 86px);
+    gap: clamp(7px, 1.2vw, 22px);
+    padding: 4px clamp(8px, 1.1vw, 21px);
+    border: 1px solid #e2eadf;
+    border-radius: 10px;
+    background: #f4f7ef;
+    font-size: clamp(.94rem, min(2.2vw, 3.2vh), 2.6rem);
+}
+.screen-body .rank-list .rank-row:last-child { border-bottom-color: #e2eadf; }
+.screen-body .ranking-head { min-height: 0; padding-block: 1px 5px; border-color: transparent; background: none; font-size: clamp(.72rem, 1.1vw, 1.15rem); }
+.screen-body .rank-name, .screen-body .rank-lines, .screen-body .rank-blocks { font-size: inherit; }
+.screen-body .rank-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.screen-body .rank-progress { font-size: .68em; }
+.screen-body progress { height: clamp(6px, .9vh, 13px); }
+.tv-pagination { margin-top: 8px; text-align: end; color: var(--muted); font-size: .87rem; }
+.screen-body .podium { --step-scale: 1.36; gap: clamp(6px, .9vw, 14px); }
+.screen-body .podium-all { grid-template-columns: repeat(auto-fit, minmax(min(100%, clamp(116px, 10.2vw, 195px)), 1fr)); row-gap: 17px; }
+.screen-body .podium-names { font-size: clamp(.93rem, min(1.9vw, 3.1vh), 2.35rem); }
+.screen-body .podium-number { font-size: clamp(1.95rem, min(3.6vw, 5.2vh), 3.65rem); }
+.screen-body .podium-all .podium-number { font-size: clamp(1.65rem, min(2.65vw, 3.8vh), 3rem); }
+.screen-body .podium-lines { font-size: clamp(.8rem, 1.42vw, 1.4rem); }
+.screen-body .goal-list { grid-template-columns: repeat(auto-fill, minmax(min(100%, clamp(192px, 17.2vw, 325px)), 1fr)); gap: clamp(8px, 1.05vw, 16px); }
+.screen-body .goal-card { padding: clamp(11px, 1.25vw, 20px); gap: clamp(7px, .85vh, 11px); }
+.screen-body .goal-name { font-size: clamp(.95rem, 1.6vw, 1.68rem); }
+.screen-body .goal-lines, .screen-body .goal-status { font-size: clamp(.8rem, 1.1vw, 1.12rem); }
+.screen-body .history-list { --bar-height: clamp(100px, 18vh, 255px); --plot-height: calc(var(--bar-height) + 53px); }
+.screen-body .history-value, .screen-body .history-date { font-size: clamp(.76rem, 1.35vw, 1.48rem); }
+.screen-body .history-bar { width: min(64%, 87px); }
+
+@media (max-width: 800px) {
+    .topbar-inner, .shell { width: calc(100% - 36px); }
+    .topbar-inner { gap: 15px; }
+    .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+    .side-stack { display: contents; }
+}
+
+@media (max-width: 550px) {
+    .topbar-inner, .shell { width: calc(100% - 26px); }
+    .topbar-inner { flex-wrap: wrap; justify-content: space-between; gap: 0 9px; padding: 10px 0 7px; min-height: 54px; }
+    .navigation { order: 3; margin: 4px 0 0; width: 100%; gap: 6px; }
+    .navigation a { padding: 5px 8px; }
+    .navigation .nav-screen { margin-inline-start: auto; }
+    .shell { margin-top: 13px; }
+    .hero { min-height: 0; display: grid; gap: 20px; padding: 21px 20px; border-radius: 18px; }
+    .hero::before { left: 12%; }
+    .hero h1 { font-size: clamp(2.18rem, 9vw, 3.4rem); }
+    .hero-main > p:last-child { margin-top: 8px; font-size: .9rem; }
+    .hero-target { min-width: 0; gap: 1px; padding-inline-start: 10px; font-size: .72rem; }
+    .hero-target strong { font-size: 1.67rem; }
+    .hero .eyebrow { margin-bottom: 7px; }
+    .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 9px 0; }
+    .stat { min-height: 0; padding: 11px 12px; }
+    .stat-value { font-size: 1.66rem; }
+    .stat-detail { font-size: .71rem; }
+    .group-stat { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 3px 8px; }
+    .group-stat .stat-value { font-size: 1.3rem; margin: 0; }
+    .group-stat .stat-detail { flex-basis: 100%; }
+    .panel { padding: 15px; border-radius: 14px; }
+    .dashboard-grid { gap: 9px; }
+    .section-head { align-items: flex-start; margin-bottom: 13px; }
+    .progress-head { align-items: center; margin-bottom: 9px; }
+    .progress-head h2 { font-size: clamp(1.4rem, 5.5vw, 1.75rem); }
+    .view-switch { margin-bottom: 14px; }
+    .view-switch button { min-height: 40px; padding-inline: 7px; }
+    .ranking .section-head p { font-size: .77rem; }
+    .rank-row { grid-template-columns: 25px minmax(0, 1.15fr) minmax(51px, .85fr) 40px 48px; gap: 6px; padding-inline: 4px; }
+    .ranking-head { font-size: .62rem; }
+    .rank-progress { display: grid; justify-items: start; gap: 3px; font-size: .66rem; }
+    .rank-lines, .rank-blocks { font-size: .86rem; }
+    :root[lang="ar"] .history-list { column-gap: 2px; }
+    :root[lang="ar"] .history-date { font-size: .66rem; }
+    .screen-body .topbar-inner { padding-block: 8px; }
+    .screen-body .screen-controls { order: 3; width: 100%; margin-inline-start: 0; }
+    .screen-body .rank-row { grid-template-columns: 27px minmax(0, 1.1fr) minmax(51px, .9fr) 43px 48px; gap: 6px; }
+    .screen-body .ranking-head { font-size: .63rem; }
+    .screen-body .podium { --step-scale: 1; }
+}
+
+[hidden] { display: none !important; }
+.stat-value b { font-weight: inherit; }
+</style>
+</head>
+<body>
+    <div id="workspace">
+        <header class="topbar">
+            <div class="topbar-inner">
+                <a class="brand" href="#"><span class="brand-mark" aria-hidden="true"></span><span data-ar="تحدّي الحفظ">Hifz Challenge</span></a>
+                <nav class="navigation" id="workspace-nav" aria-label="Hauptnavigation" data-ar-label="التنقّل الرئيسي">
+                    <a id="dashboard-nav" href="#" aria-current="page" data-ar="نظرة عامة">Übersicht</a>
+                    <a id="group-nav" href="#gruppe" data-ar="المجموعة">Gruppe</a>
+                    <a class="nav-screen" href="#tv" target="_blank" rel="noopener" data-ar="عرض التلفاز">TV-Ansicht</a>
+                </nav>
+                <div class="screen-controls" id="screen-controls" hidden>
+                    <a class="button outline small" href="#" data-ar="العودة إلى النظرة العامة">Zur Übersicht</a>
+                    <button class="button small" type="button" id="fullscreen">Vollbild</button>
+                </div>
+                <button class="button outline small language-switch" id="language-switch" type="button" aria-label="Auf Arabisch wechseln">
+                    <span id="language-option" lang="ar" dir="rtl">العربية</span>
+                </button>
+            </div>
+        </header>
+        <main class="shell">
+            <p class="notice" data-ar="عرض تجريبي ببيانات افتراضية">Testansicht mit Beispieldaten</p>
+            <p class="notice" id="notice" role="status" hidden></p>
+
+            <div id="dashboard">
+                <section class="hero">
+                    <div class="hero-main">
+                        <p class="eyebrow" data-ar="خمس سنوات لحفظ القرآن">Fünf Jahre Hifz</p>
+                        <h1 id="challenge-title" dir="auto">Quran auswendig lernen</h1>
+                        <p data-ar="نحفظ معًا، خمسة أسطر في كل مرّة.">Gemeinsam lernen, fünf Zeilen auf einmal.</p>
+                    </div>
+                    <div class="hero-target">
+                        <span data-ar="الهدف لكل مشارك">Ziel pro Person</span>
+                        <strong><span id="goal-lines">9.000</span> <small data-ar="سطر">Zeilen</small></strong>
+                        <span id="challenge-dates"></span>
+                    </div>
+                </section>
+
+                <section class="stats" aria-label="Gruppenstand auf einen Blick" data-ar-label="لمحة عن تقدّم المجموعة">
+                    <article class="panel stat personal">
+                        <p class="stat-label" data-ar="تقدّم مجموعتكم">Euer Gruppenstand</p>
+                        <p class="stat-value"><b id="group-lines">0</b> <span data-ar="سطر">Zeilen</span></p>
+                        <progress id="group-progress" value="0" max="100" aria-label="Durchschnittlicher Zielfortschritt" data-ar-label="متوسّط التقدّم نحو الهدف"></progress>
+                        <p class="stat-detail" id="group-percent">0,0 % des Gruppenziels</p>
+                    </article>
+                    <article class="panel stat">
+                        <p class="stat-label" data-ar="هذا الأسبوع">Diese Woche</p>
+                        <p class="stat-value"><b id="week-blocks">0</b> <span data-ar="مجموعات من ٥ أسطر">5er-Blöcke</span></p>
+                        <p class="stat-detail" data-ar="ما حفظته المجموعة منذ الاثنين">Von der Gruppe seit Montag gelernt</p>
+                    </article>
+                    <article class="panel stat group-stat">
+                        <p class="stat-label" data-ar="المشاركون">Teilnehmer</p>
+                        <p class="stat-value"><b id="participant-count">0</b></p>
+                        <p class="stat-detail" id="week-target">Wochensoll pro Person</p>
+                    </article>
+                </section>
+
+                <div class="dashboard-grid">
+                    <section class="panel ranking" aria-labelledby="ranking-title">
+                        <div class="section-head progress-head">
+                            <h2 id="ranking-title" data-ar="تقدّم الحفظ">Lernfortschritt</h2>
+                            <div class="segmented" role="group" aria-label="Zeitraum" data-ar-label="الفترة الزمنية">
+                                <button type="button" data-period="total" aria-controls="progress-view" aria-pressed="true" data-ar="الإجمالي">Gesamt</button>
+                                <button type="button" data-period="week" aria-controls="progress-view" aria-pressed="false" data-ar="الأسبوع">Woche</button>
+                            </div>
+                        </div>
+                        <div class="view-switch" role="group" aria-label="Darstellung" data-ar-label="طريقة العرض">
+                            <button type="button" data-view="ranking" aria-controls="progress-view" aria-pressed="true" data-ar="قائمة الترتيب">Rangliste</button>
+                            <button type="button" data-view="podium" aria-controls="progress-view" aria-pressed="false" data-ar="منصّة الفائزين">Siegertreppe</button>
+                            <button type="button" data-view="places" aria-controls="progress-view" aria-pressed="false" data-ar="جميع المراكز">Alle Plätze</button>
+                            <button type="button" data-view="goals" aria-controls="progress-view" aria-pressed="false" data-ar="بطاقات الأهداف">Zielkarten</button>
+                            <button type="button" data-view="history" aria-controls="progress-view" aria-pressed="false" data-ar="سجلّ الحفظ">Lernverlauf</button>
+                        </div>
+                        <div id="progress-view">
+                            <p class="view-note" id="rank-empty" data-ar="لا توجد بيانات عن تقدّم المجموعة.">Für diese Gruppe sind keine Fortschrittsdaten vorhanden.</p>
+                            <div id="rank-table" hidden>
+                                <div class="ranking-head rank-row" aria-hidden="true">
+                                    <span data-ar="الرتبة">Rang</span>
+                                    <span data-ar="الاسم">Name</span>
+                                    <span id="progress-heading">Fortschritt</span>
+                                    <span data-ar="الأسطر">Zeilen</span>
+                                    <span data-ar="مجموعات">Blöcke</span>
+                                </div>
+                                <ol class="rank-list" id="ranks"></ol>
+                                <p class="tv-pagination" id="tv-pagination" hidden></p>
+                            </div>
+                            <div id="progress-visual" hidden></div>
+                        </div>
+                    </section>
+
+                    <div class="side-stack" id="dashboard-sidebar">
+                        <section class="panel activity-panel" aria-labelledby="activity-title">
+                            <h2 id="activity-title" data-ar="آخر تسجيلات الحفظ">Letzte Einträge</h2>
+                            <p class="muted" id="activity-empty" data-ar="تظهر هنا أسماء المشاركين وعدد الأسطر التي حفظوها وتواريخ الحفظ.">Hier erscheint, wer wann wie viele Zeilen gelernt hat.</p>
+                            <ul class="activity-list" id="activity"></ul>
+                            <button class="text-button" type="button" id="show-activity" hidden>Alle Einträge anzeigen</button>
+                        </section>
+                    </div>
+                </div>
+            </div>
+
+            <div id="group" hidden>
+                <div class="page-heading"><h1 data-ar="مجموعتكم">Eure Gruppe</h1></div>
+                <section class="panel">
+                    <h2 data-ar="المشاركون">Teilnehmer</h2>
+                    <ul class="member-list" id="members"></ul>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <noscript>Aktiviere JavaScript in deinem Browser, um die Hifz Challenge zu verwenden.</noscript>
+    <script>
+'use strict';
+
+const LANGUAGE_KEY = 'hifz-pages-preview-language-v1';
+const DEFAULT_TITLE = 'Quran auswendig lernen';
+const DEFAULT_TITLE_ARABIC = 'حفظ القرآن الكريم';
+const LINES_PER_BLOCK = 5;
+const DAY_MS = 86400000;
+const formatter = new Intl.NumberFormat('de-DE');
+const decimal = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const arabicNumber = new Intl.NumberFormat('ar', { numberingSystem: 'arab' });
+const arabicPercent = new Intl.NumberFormat('ar', {
+    numberingSystem: 'arab', style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1,
+});
+const shortDay = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
+const shortMonth = new Intl.DateTimeFormat('de-DE', { month: '2-digit', year: '2-digit', timeZone: 'UTC' });
+const arabicDateOptions = { calendar: 'gregory', numberingSystem: 'arab', month: '2-digit', timeZone: 'UTC' };
+const arabicDate = new Intl.DateTimeFormat('ar', { ...arabicDateOptions, day: '2-digit', year: 'numeric' });
+const arabicShortDay = new Intl.DateTimeFormat('ar', { ...arabicDateOptions, day: '2-digit' });
+const arabicShortMonth = new Intl.DateTimeFormat('ar', { ...arabicDateOptions, year: '2-digit' });
+const names = new Intl.Collator('de-DE', { sensitivity: 'base' });
+const $ = (id) => document.getElementById(id);
+const viewButtons = document.querySelectorAll('[data-view]');
+const periodButtons = document.querySelectorAll('[data-period]');
+const staticTranslations = [
+    ['data-ar', 'textContent'], ['data-ar-label', 'aria-label'], ['data-ar-placeholder', 'placeholder'],
+].flatMap(([source, target]) => Array.from(document.querySelectorAll('[' + source + ']'), (element) => ({
+    element, target,
+    german: target === 'textContent' ? element.textContent.trim() : element.getAttribute(target),
+    arabic: element.getAttribute(source),
+})));
+
+function readLanguage() {
+    try {
+        return localStorage.getItem(LANGUAGE_KEY) === 'ar' ? 'ar' : 'de';
+    } catch {
+        return 'de';
+    }
+}
+
+let language = readLanguage();
+
+function localized(german, arabic = german) {
+    return language === 'ar' ? arabic : german;
+}
+
+function formatNumber(value) {
+    return localized(formatter, arabicNumber).format(value);
+}
+
+function formatPercent(value) {
+    return language === 'ar' ? arabicPercent.format(value / 100) : decimal.format(value) + ' %';
+}
+
+function updateDocumentTitle() {
+    const title = localized('Hifz Challenge', 'تحدّي الحفظ');
+    document.title = currentPage === 'tv' ? localized('TV · ', 'عرض التلفاز · ') + title : title;
+}
+
+function updateFullscreenLabel() {
+    $('fullscreen').textContent = document.fullscreenElement
+        ? localized('Vollbild beenden', 'الخروج من ملء الشاشة')
+        : localized('Vollbild', 'ملء الشاشة');
+}
+
+function applyLanguage() {
+    document.documentElement.lang = language;
+    document.documentElement.dir = localized('ltr', 'rtl');
+    for (const { element, target, german, arabic } of staticTranslations) {
+        const value = localized(german, arabic);
+        if (target === 'textContent') element.textContent = value;
+        else element.setAttribute(target, value);
+    }
+    const option = $('language-option');
+    option.lang = localized('ar', 'de');
+    option.dir = localized('rtl', 'ltr');
+    option.textContent = localized('العربية', 'Deutsch');
+    $('language-switch').setAttribute('aria-label', localized('Auf Arabisch wechseln', 'التبديل إلى الألمانية'));
+    updateDocumentTitle();
+    updateFullscreenLabel();
+}
+
+function changeLanguage(nextLanguage) {
+    if (nextLanguage === language) return;
+    language = nextLanguage;
+    applyLanguage();
+    showNotice();
+    render();
+}
+
+function dateKey(date) {
+    const twoDigits = (value) => String(value).padStart(2, '0');
+    return date.getFullYear() + '-' + twoDigits(date.getMonth() + 1) + '-' + twoDigits(date.getDate());
+}
+
+function formatDate(key) {
+    return language === 'ar' ? arabicDate.format(new Date(key)) : key.split('-').reverse().join('.');
+}
+
+function formatDateRange(from, to) {
+    const start = formatDate(from);
+    const end = formatDate(to);
+    return localized(start + ' – ' + end, 'من ' + start + ' إلى ' + end);
+}
+
+function createDemoChallenge() {
+    const now = new Date();
+    const sampleDate = (offset) => {
+        const date = new Date(now);
+        date.setDate(date.getDate() + offset);
+        return dateKey(date);
+    };
+    const members = ['Amina', 'Yusuf', 'Maryam', 'Samira', 'Zayd'].map((name, index) => ({
+        id: 'demo-' + index,
+        name,
+    }));
+    const entries = [
+        [0, -84, 40], [1, -80, 36], [2, -75, 42], [3, -62, 28], [4, -54, 23],
+        [2, -47, 16], [0, -38, 25], [1, -30, 17], [3, -21, 22], [4, -14, 9],
+        [0, -9, 7], [2, -8, 6], [0, 0, 6], [1, 0, 5], [2, 0, 4], [3, 0, 3],
+    ].map(([person, offset, blocks]) => ({ memberId: members[person].id, date: sampleDate(offset), blocks }));
+    return { startDate: sampleDate(-95), pages: 600, linesPerPage: 15, members, entries };
+}
+
+const state = createDemoChallenge();
+let period = 'total';
+let selectedView = 'ranking';
+let showAllEntries = false;
+let currentPage = '';
+let tvRows = [];
+let tvPage = 0;
+let tvPageCount = 1;
+let currentNotice = { german: '', arabic: '', error: false };
+
+function setText(element, german, arabic) {
+    element.textContent = localized(german, arabic);
+}
+
+function node(tag, className, value, arabic) {
+    const element = document.createElement(tag);
+    if (className) element.className = className;
+    if (value !== undefined) setText(element, value, arabic);
+    return element;
+}
+
+function showNotice() {
+    const { german, arabic, error } = currentNotice;
+    const element = $('notice');
+    setText(element, german, arabic);
+    element.classList.toggle('error', error);
+    element.hidden = !german;
+}
+
+function notice(german = '', arabic, error = false) {
+    currentNotice = { german, arabic, error };
+    showNotice();
+}
+
+function progressBar(value, label, arabicLabel) {
+    const bar = document.createElement('progress');
+    bar.max = 100;
+    bar.value = Math.min(100, value);
+    bar.setAttribute('aria-label', localized(label, arabicLabel));
+    return bar;
+}
+
+function overview() {
+    const now = new Date();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - (now.getDay() + 6) % 7);
+    const weekStart = dateKey(monday);
+    const today = dateKey(now);
+
+    const goal = state.pages * state.linesPerPage;
+    const deadline = new Date(state.startDate + 'T12:00:00');
+    deadline.setFullYear(deadline.getFullYear() + 5);
+    const end = dateKey(deadline);
+    const durationWeeks = (Date.parse(end) - Date.parse(state.startDate)) / 604800000;
+    const weeklyTarget = Math.ceil(goal / LINES_PER_BLOCK / durationWeeks);
+
+    const byPerson = new Map(state.members.map((member) => [
+        member.id, { ...member, lines: 0, weekBlocks: 0 },
+    ]));
+    let groupLines = 0;
+    let groupWeek = 0;
+    for (const entry of state.entries) {
+        if (entry.date > today) continue;
+        const member = byPerson.get(entry.memberId);
+        const lines = entry.blocks * LINES_PER_BLOCK;
+        member.lines += lines;
+        groupLines += lines;
+        if (entry.date >= weekStart) {
+            member.weekBlocks += entry.blocks;
+            groupWeek += entry.blocks;
+        }
+    }
+    const size = state.members.length;
+    return {
+        goal, weeklyTarget, groupLines, groupWeek, size, weekStart, today,
+        groupProgress: size ? groupLines / (goal * size) * 100 : 0,
+        dates: formatDateRange(state.startDate, end),
+        rows: Array.from(byPerson.values()),
+    };
+}
+
+function ranked(data, weekly = false) {
+    const rows = data.rows.map((person) => ({
+        ...person,
+        score: weekly ? person.weekBlocks * LINES_PER_BLOCK : person.lines,
+        progress: weekly ? person.weekBlocks / data.weeklyTarget * 100 : person.lines / data.goal * 100,
+    }));
+    rows.sort((a, b) => b.score - a.score || names.compare(a.name, b.name));
+
+    let rank = 0;
+    let lastScore = null;
+    return rows.map((row, index) => {
+        if (row.score !== lastScore) rank = index + 1;
+        lastScore = row.score;
+        return { ...row, rank };
+    });
+}
+
+function rankingRow(row) {
+    const item = node('li', 'rank-row');
+    const name = node('span', 'rank-name');
+    name.title = row.name;
+    name.append(node('bdi', '', row.name));
+    const progress = node('span', 'rank-progress');
+    progress.append(
+        progressBar(row.progress, 'Fortschritt von ' + row.name, 'تقدّم الحفظ لدى ' + row.name),
+        node('span', '', formatPercent(Math.min(row.progress, 100))),
+    );
+    item.append(
+        node('span', 'rank-number', formatNumber(row.rank) + '.'),
+        name,
+        progress,
+        node('strong', 'rank-lines', formatNumber(row.score)),
+        node('strong', 'rank-blocks', formatNumber(row.score / LINES_PER_BLOCK)),
+    );
+    return item;
+}
+
+function podiumView(rows, showAll) {
+    const podium = node('ol', showAll ? 'podium podium-all' : 'podium podium-top');
+    podium.setAttribute('aria-label', showAll
+        ? localized('Alle Plätze', 'جميع المراكز')
+        : localized('Die ersten drei Plätze', 'المراكز الثلاثة الأولى'));
+    const places = new Map();
+    for (const row of rows) {
+        if (!showAll && (row.rank > 3 || row.score === 0)) break;
+        const tied = places.get(row.rank);
+        if (tied) tied.push(row);
+        else places.set(row.rank, [row]);
+    }
+    for (const [rank, tied] of places) {
+        const place = node('li', 'podium-place');
+        place.dataset.rank = rank;
+        place.style.setProperty('--place-number', rank);
+        place.value = rank;
+        const members = node('div', 'podium-names');
+        for (const person of tied) members.append(node('bdi', '', person.name));
+        const step = node('div', 'podium-step');
+        step.append(
+            node('span', 'podium-number', formatNumber(rank) + '.'),
+            node('span', 'podium-lines', formatter.format(tied[0].score) + ' Zeilen', arabicNumber.format(tied[0].score) + ' سطر'),
+        );
+        place.append(members, step);
+        podium.append(place);
+    }
+    return podium;
+}
+
+function goalCards(data, weekly) {
+    const target = weekly ? data.weeklyTarget * LINES_PER_BLOCK : data.goal;
+    const goalName = weekly ? 'Wochenziel' : 'Gesamtziel';
+    const arabicGoalName = weekly ? 'الهدف الأسبوعي' : 'الهدف الإجمالي';
+    const cards = node('ul', 'goal-list');
+    cards.setAttribute('aria-label', localized(goalName + ' pro Person', arabicGoalName + ' لكل مشارك'));
+    const people = [...data.rows].sort((a, b) => names.compare(a.name, b.name));
+    for (const person of people) {
+        const score = weekly ? person.weekBlocks * LINES_PER_BLOCK : person.lines;
+        const percent = Math.min(100, score / target * 100);
+        const remaining = target - score;
+        const card = node('li', 'goal-card');
+        const lines = node('p', 'goal-lines');
+        lines.append(
+            node('span', 'goal-count', formatter.format(score) + ' von ' + formatter.format(target) + ' Zeilen',
+                'عدد الأسطر: ' + arabicNumber.format(score) + ' من أصل ' + arabicNumber.format(target)),
+            node('span', 'goal-percent', formatPercent(percent)),
+        );
+        const status = remaining > 0
+            ? node('p', 'goal-status', 'Noch ' + formatter.format(remaining) + ' Zeilen bis zum ' + goalName,
+                'الأسطر المتبقّية لبلوغ ' + arabicGoalName + ': ' + arabicNumber.format(remaining))
+            : node('p', 'goal-status complete', goalName + ' erreicht', 'تم بلوغ ' + arabicGoalName);
+        const name = node('strong', 'goal-name');
+        name.append(node('bdi', '', person.name));
+        card.append(
+            name,
+            lines,
+            progressBar(percent, goalName + ' von ' + person.name, arabicGoalName + ' لدى ' + person.name),
+            status,
+        );
+        cards.append(card);
+    }
+    return cards;
+}
+
+function historyPoints(data, weekly) {
+    const totals = new Map();
+    let first = data.today;
+    for (const entry of state.entries) {
+        if (entry.date > data.today || (weekly && entry.date < data.weekStart)) continue;
+        if (entry.date < first) first = entry.date;
+        totals.set(entry.date, (totals.get(entry.date) || 0) + entry.blocks * LINES_PER_BLOCK);
+    }
+
+    const start = new Date(weekly ? data.weekStart : first);
+    const end = weekly ? new Date(start.getTime() + 6 * DAY_MS) : new Date(data.today);
+    const days = (end - start) / DAY_MS + 1;
+    const daysPerPoint = days <= 7 ? 1 : 7;
+    let monthsPerPoint = 0;
+    if (days > 49) {
+        const months = (end.getUTCFullYear() - start.getUTCFullYear()) * 12
+            + end.getUTCMonth() - start.getUTCMonth() + 1;
+        monthsPerPoint = Math.ceil(months / 7);
+        start.setUTCDate(1);
+    }
+
+    const weekdays = [
+        ['Mo', 'الاثنين'], ['Di', 'الثلاثاء'], ['Mi', 'الأربعاء'], ['Do', 'الخميس'],
+        ['Fr', 'الجمعة'], ['Sa', 'السبت'], ['So', 'الأحد'],
+    ];
+    const dateLabel = monthsPerPoint ? localized(shortMonth, arabicShortMonth) : localized(shortDay, arabicShortDay);
+    const points = [];
+    for (let date = start; date <= end;) {
+        const next = new Date(date);
+        if (monthsPerPoint) {
+            next.setUTCMonth(date.getUTCMonth() + monthsPerPoint);
+        } else {
+            next.setUTCDate(date.getUTCDate() + daysPerPoint);
+        }
+        const key = date.toISOString().slice(0, 10);
+        const lastDay = new Date(Math.min(end, next.getTime() - DAY_MS)).toISOString().slice(0, 10);
+        const label = weekly ? weekdays[points.length] : [dateLabel.format(date)];
+        const range = key === lastDay ? formatDate(key) : formatDateRange(key, lastDay);
+        points.push({ lastDay, label, range, lines: 0, future: key > data.today });
+        date = next;
+    }
+    for (const [date, lines] of totals) {
+        const point = points.find(({ lastDay }) => date <= lastDay);
+        point.lines += lines;
+    }
+
+    let interval = daysPerPoint === 1 ? ['pro Tag', 'يوميًا'] : ['je 7 Tage', 'كل ٧ أيام'];
+    if (monthsPerPoint === 1) interval = ['pro Monat', 'شهريًا'];
+    if (monthsPerPoint > 1) {
+        interval = ['je ' + monthsPerPoint + ' Monate', 'لكل فترة (عدد الأشهر: ' + arabicNumber.format(monthsPerPoint) + ')'];
+    }
+    return { points, interval };
+}
+
+function historyChart(data, weekly) {
+    const { points, interval } = historyPoints(data, weekly);
+    const max = Math.max(...points.map((point) => point.lines));
+    const chart = node('div');
+    const list = node('ul', 'history-list');
+    list.style.setProperty('--history-columns', points.length);
+    list.setAttribute('aria-label', localized('Lernverlauf der Gruppe', 'سجلّ حفظ المجموعة'));
+    for (const point of points) {
+        const item = node('li', 'history-point');
+        const detail = node('div');
+        const count = formatNumber(point.lines);
+        const description = point.range + ' · ' + (point.future
+            ? localized('steht noch aus', 'لم يحن بعد')
+            : localized(count + ' Zeilen', 'عدد الأسطر: ' + count));
+        detail.setAttribute('role', 'img');
+        detail.setAttribute('aria-label', description);
+        detail.title = description;
+        const column = node('div', 'history-column');
+        const value = point.future ? node('span', 'history-value history-future', '–') : node('span', 'history-value', count);
+        const bar = node('span', 'history-bar');
+        bar.style.setProperty('--share', point.lines / max);
+        column.append(value, bar);
+        detail.append(column, node('span', 'history-date', ...point.label));
+        item.append(detail);
+        list.append(item);
+    }
+    chart.append(node('p', 'view-note', 'Gelernte Zeilen der Gruppe ' + interval[0],
+        'الأسطر التي حفظتها المجموعة ' + interval[1]), list);
+    return chart;
+}
+
+function renderProgress(data) {
+    const weekly = period === 'week';
+    const showTable = selectedView === 'ranking';
+    const visual = $('progress-visual');
+    $('rank-empty').hidden = data.size > 0;
+    $('rank-table').hidden = !data.size || !showTable;
+    $('tv-pagination').hidden = true;
+    visual.hidden = !data.size || showTable;
+    for (const button of periodButtons) {
+        button.setAttribute('aria-pressed', String(button.dataset.period === period));
+    }
+    for (const button of viewButtons) {
+        button.setAttribute('aria-pressed', String(button.dataset.view === selectedView));
+    }
+    if (!data.size || !showTable) {
+        tvRows = [];
+        tvPage = 0;
+        tvPageCount = 1;
+    }
+    if (!data.size) return;
+
+    if (showTable) {
+        setText($('progress-heading'), weekly ? 'Wochenziel' : 'Fortschritt', weekly ? 'الهدف الأسبوعي' : 'التقدّم');
+        const rows = ranked(data, weekly);
+        if (currentPage === 'tv') {
+            tvRows = rows;
+            drawTvPage();
+        } else {
+            $('ranks').replaceChildren(...rows.map(rankingRow));
+        }
+    } else if (selectedView === 'goals') {
+        visual.replaceChildren(goalCards(data, weekly));
+    } else if (selectedView === 'places') {
+        visual.replaceChildren(podiumView(ranked(data, weekly), true));
+    } else if (!(weekly ? data.groupWeek : data.groupLines)) {
+        const message = weekly
+            ? ['Für diese Woche sind noch keine Zeilen eingetragen.', 'لم تُسجَّل أي أسطر لهذا الأسبوع بعد.']
+            : ['Für diesen Zeitraum liegen noch keine Einträge vor.', 'لا توجد تسجيلات لهذه الفترة بعد.'];
+        visual.replaceChildren(node('p', 'view-note', ...message));
+    } else if (selectedView === 'history') {
+        visual.replaceChildren(historyChart(data, weekly));
+    } else {
+        visual.replaceChildren(podiumView(ranked(data, weekly), false));
+    }
+}
+
+function renderDashboard(data) {
+    $('challenge-title').textContent = localized(DEFAULT_TITLE, DEFAULT_TITLE_ARABIC);
+    $('challenge-dates').textContent = data.dates;
+    $('goal-lines').textContent = formatNumber(data.goal);
+    $('group-lines').textContent = formatNumber(data.groupLines);
+    $('group-progress').value = Math.min(100, data.groupProgress);
+    setText($('group-percent'), decimal.format(data.groupProgress) + ' % des Gruppenziels',
+        arabicPercent.format(data.groupProgress / 100) + ' من هدف المجموعة');
+    $('week-blocks').textContent = formatNumber(data.groupWeek);
+    $('participant-count').textContent = formatNumber(data.size);
+    setText($('week-target'), 'Wochensoll pro Person: ' + formatter.format(data.weeklyTarget) + ' Blöcke',
+        'الهدف الأسبوعي لكل مشارك (بالمجموعات): ' + arabicNumber.format(data.weeklyTarget));
+
+    renderProgress(data);
+    if (currentPage === 'tv') return;
+
+    const members = state.members;
+    const memberNames = new Map(members.map((member) => [member.id, member.name]));
+    const entries = showAllEntries ? state.entries : state.entries.slice(-10);
+    const activity = document.createDocumentFragment();
+    for (const entry of [...entries].reverse()) {
+        const item = node('li');
+        const detail = node('div');
+        const time = node('time', '', formatDate(entry.date));
+        time.dateTime = entry.date;
+        const summary = node('strong');
+        summary.append(node('bdi', '', memberNames.get(entry.memberId)), ' · +' + formatNumber(entry.blocks * LINES_PER_BLOCK) + ' ',
+            localized('Zeilen', 'سطر'));
+        detail.append(summary, time);
+        item.append(detail);
+        activity.append(item);
+    }
+    $('activity-empty').hidden = entries.length > 0;
+    $('activity').replaceChildren(activity);
+    $('show-activity').hidden = state.entries.length <= 10;
+    setText($('show-activity'), showAllEntries ? 'Nur die letzten zehn anzeigen' : 'Alle Einträge anzeigen',
+        showAllEntries ? 'عرض آخر عشرة تسجيلات فقط' : 'عرض كل التسجيلات');
+}
+
+function renderGroup() {
+    $('members').replaceChildren(...state.members.map((member) => {
+        const item = node('li');
+        const name = node('bdi', '', member.name);
+        item.append(name);
+        return item;
+    }));
+}
+
+function drawTvPage() {
+    if (currentPage !== 'tv' || selectedView !== 'ranking' || !tvRows.length) return;
+    const list = $('ranks');
+    const pager = $('tv-pagination');
+    if (window.innerWidth <= 550) {
+        list.replaceChildren(...tvRows.map(rankingRow));
+        pager.hidden = true;
+        tvPage = 0;
+        tvPageCount = 1;
+        return;
+    }
+
+    const first = rankingRow(tvRows[0]);
+    list.replaceChildren(first);
+    const rowHeight = first.getBoundingClientRect().height;
+    const rowGap = parseFloat(getComputedStyle(list).rowGap) || 0;
+    const panelPadding = parseFloat(getComputedStyle(list.closest('.ranking')).paddingBottom);
+    const shellMargin = parseFloat(getComputedStyle(list.closest('.shell')).marginBottom);
+    const fullscreen = document.fullscreenElement;
+    const viewportHeight = fullscreen?.clientHeight ?? window.innerHeight;
+    const scrollTop = fullscreen?.scrollTop ?? window.scrollY;
+    const space = viewportHeight - list.getBoundingClientRect().top - scrollTop - panelPadding - shellMargin - 1;
+    const rowsThatFit = (height) => Math.max(1, Math.floor((height + rowGap) / (rowHeight + rowGap)));
+    let capacity = rowsThatFit(space);
+    if (tvRows.length > capacity) {
+        pager.hidden = false;
+        setText(pager, 'Seite', 'الصفحة');
+        const pagerSpace = pager.getBoundingClientRect().height + parseFloat(getComputedStyle(pager).marginTop);
+        capacity = rowsThatFit(space - pagerSpace);
+    }
+    tvPageCount = Math.ceil(tvRows.length / capacity);
+    tvPage = Math.min(tvPage, tvPageCount - 1);
+    const from = tvPage * capacity;
+    list.replaceChildren(...tvRows.slice(from, from + capacity).map(rankingRow));
+    pager.hidden = tvPageCount <= 1;
+    if (pager.hidden) {
+        pager.textContent = '';
+    } else {
+        setText(pager, 'Seite ' + (tvPage + 1) + ' / ' + tvPageCount,
+            'الصفحة ' + arabicNumber.format(tvPage + 1) + ' من ' + arabicNumber.format(tvPageCount));
+    }
+}
+
+function render() {
+    if (currentPage === 'gruppe') {
+        renderGroup();
+    } else {
+        renderDashboard(overview());
+    }
+}
+
+function navigate() {
+    const page = window.location.hash.slice(1);
+    currentPage = page === 'tv' || page === 'gruppe' ? page : 'dashboard';
+    const isTv = currentPage === 'tv';
+    const isGroup = currentPage === 'gruppe';
+    document.body.classList.toggle('screen-body', isTv);
+    $('workspace-nav').hidden = isTv;
+    $('screen-controls').hidden = !isTv;
+    $('dashboard-sidebar').hidden = isTv;
+    $('dashboard').hidden = isGroup;
+    $('group').hidden = !isGroup;
+    if (!isTv && document.fullscreenElement === $('workspace')) document.exitFullscreen().catch(() => {});
+    $(isGroup ? 'dashboard-nav' : 'group-nav').removeAttribute('aria-current');
+    $(isGroup ? 'group-nav' : 'dashboard-nav').setAttribute('aria-current', 'page');
+    updateDocumentTitle();
+    notice('');
+    render();
+    window.scrollTo(0, 0);
+}
+
+$('show-activity').addEventListener('click', () => {
+    showAllEntries = !showAllEntries;
+    renderDashboard(overview());
+});
+
+for (const button of periodButtons) {
+    button.addEventListener('click', () => {
+        if (period !== button.dataset.period) tvPage = 0;
+        period = button.dataset.period;
+        renderProgress(overview());
+    });
+}
+
+for (const button of viewButtons) {
+    button.addEventListener('click', () => {
+        selectedView = button.dataset.view;
+        renderProgress(overview());
+    });
+}
+
+$('language-switch').addEventListener('click', () => {
+    const nextLanguage = localized('ar', 'de');
+    try {
+        localStorage.setItem(LANGUAGE_KEY, nextLanguage);
+    } catch {
+        // The selected language still applies in the current tab.
+    }
+    changeLanguage(nextLanguage);
+});
+
+$('fullscreen').addEventListener('click', async () => {
+    try {
+        if (document.fullscreenElement) {
+            await document.exitFullscreen();
+        } else {
+            await $('workspace').requestFullscreen();
+        }
+    } catch {
+        notice('Dieser Browser bietet hier keinen Vollbildmodus.', 'لا يدعم هذا المتصفّح وضع ملء الشاشة هنا.', true);
+    }
+});
+document.addEventListener('fullscreenchange', () => {
+    updateFullscreenLabel();
+    drawTvPage();
+});
+window.addEventListener('resize', drawTvPage);
+window.addEventListener('hashchange', navigate);
+window.addEventListener('storage', (event) => {
+    if (event.key === LANGUAGE_KEY || event.key === null) changeLanguage(readLanguage());
+});
+window.setInterval(() => {
+    if (currentPage === 'tv' && selectedView === 'ranking' && tvPageCount > 1) {
+        tvPage = (tvPage + 1) % tvPageCount;
+        drawTvPage();
+    }
+}, 12000);
+
+applyLanguage();
+navigate();
+</script>
+</body>
+</html>
